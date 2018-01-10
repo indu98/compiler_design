@@ -1,0 +1,16 @@
+int i;
+// Working of for loop
+for (i=0; i<5; i++)
+{
+   if(i%2==0)
+     {
+         i++;
+         continue;
+     }
+   else 
+     {
+        i+=2;
+        break;
+     }
+ }
+
