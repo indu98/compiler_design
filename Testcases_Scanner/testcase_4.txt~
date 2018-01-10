@@ -1,8 +1,0 @@
-/*/*This is a nested comment*/*/
-int find_double(int a)
-{
-int b= 2*a;
-return b;
-}
-9ab;
-
