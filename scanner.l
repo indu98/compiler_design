@@ -162,7 +162,7 @@ file=fopen("Testcases_Scanner/testcase_3.txt", "r");
 yyin=file;
 yylex();
 if(comment!=0)
-printf("Nested comment error found\n");
+printf("Multiline comment error found\n");
 printf("\n___________CONSTANTS TABLE____________\n");
 printf("\nName\t\t\tType\t\t\tLine\n");
 for(k=0; k<j; k++)
