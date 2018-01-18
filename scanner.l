@@ -105,7 +105,7 @@ printf("Identifier:\t\t\t\t%s\n", yytext);
 }
 }
 
-"*"|"+"|"-"|"++"|"--"|"!"|"~"|"<<"|">>"|"<="|"<"|">"|"=="|"!="|"&"|"^"|"|"|"&&"|"\||"|"*="|"+="|"-="|"="|"&="|"^="|","|">>="|"<<="|"="|"%"|"=" {
+"*"|"+"|"-"|"/"|"++"|"--"|"!"|"~"|"<<"|">>"|"<="|"<"|">"|"=="|"!="|"&"|"^"|"|"|"&&"|"\||"|"*="|"+="|"-="|"="|"&="|"^="|","|">>="|"<<="|"="|"%"|"=" {
 if(comment<=0) 
 printf("Operator is found:\t\t\t\t%s\n", yytext);
 }
@@ -142,14 +142,9 @@ if(comment<=0)
 printf("Function:\t\t\t\t%s\n", yytext);
 }
 
-\" {
+\"(\\.|[^"\\])* {
 if(comment<=0)
-{
-if(quote_error==0)
-quote_error=1;
-else
-quote_error=0;
-}
+printf("String literal is not ending until EOF\n");
 }
 
 {invalid_identifier} {
@@ -161,14 +156,13 @@ printf("Invalid identifier name %s at line number %d\n", yytext, line);
 %%
 int main()
 {
+printf("\n\n\n\n\n");
 FILE *file;
-file=fopen("abc.txt", "r");
+file=fopen("Testcases_Scanner/testcase_3.txt", "r");
 yyin=file;
 yylex();
 if(comment!=0)
 printf("Nested comment error found\n");
-if(quote_error==1)
-printf("String literal is not ending until EOF\n");
 printf("\n___________CONSTANTS TABLE____________\n");
 printf("\nName\t\t\tType\t\t\tLine\n");
 for(k=0; k<j; k++)
@@ -178,7 +172,7 @@ printf("\n___________SYMBOLS TABLE_____________\n");
 printf("\nName\t\t\tType\n");
 for(k=0; k<i; k++)
 printf("%s\t\t\t%s\n", ident[k].values, ident[k].type);
-printf("\n");
+printf("\n\n\n\n\n\n");
 }
 int yywrap()
 {

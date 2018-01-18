@@ -2,8 +2,8 @@
 int r;
 /* r is the radius of the circle. This program computes the circumference of
 a circle.*/
-printf(“Enter the radius of the circle”);
-scanf(“%d”,&r);
-printf(“The circumference of the circle is %f”, 2*pi*r);
-printf(“Program has ended);
+printf("Enter the radius of the circle");
+scanf("%d",&r);
+printf("The circumference of the circle is %f", 2*pi*r);
+printf("Program has ended);
 
