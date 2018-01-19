@@ -1,0 +1,11 @@
+#include<stdio.h>
+#include<abc.h>
+
+int main()
+{
+int arr[1];
+int array[2][2];
+int sun]3[;
+int find_prod(3,6);
+int find_sum)3,6(;
+}

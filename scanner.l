@@ -137,9 +137,14 @@ if(comment<=0)
 printf("String literal:\t\t\t\t%s\n", yytext);
 }
 
-{identi}\(({alphanum}|{white})*\) {
+{identi}\(({alphanum}|{white}|\,)*\) {
 if(comment<=0)
 printf("Function:\t\t\t\t%s\n", yytext);
+}
+
+{identi}(\[{digit}+\])+ {
+if(comment<=0)
+printf("Array:\t\t\t\t%s\n", yytext);
 }
 
 \"(\\.|[^"\\])* {
@@ -158,7 +163,7 @@ int main()
 {
 printf("\n\n\n\n\n");
 FILE *file;
-file=fopen("Testcases_Scanner/testcase_3.txt", "r");
+file=fopen("Testcases_Scanner/testcase_6.txt", "r");
 yyin=file;
 yylex();
 if(comment!=0)
