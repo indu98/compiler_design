@@ -1,0 +1,18 @@
+Lexical Analysis
+
+Output : Stream of tokens, Symbol table and Constant table, Lexical Errors (if any)
+
+The list of tokens that have been identified are :
+1. Identifiers
+2. Keywords
+3. Constants (Integer, Float, String Literal)
+4. Operators
+5. Special characters
+6. Preprocessor directives
+
+Arrays and functions are also identified. Multiline/Single line/Nested comments are ignored.
+
+Steps to compile & run :
+1. lex scanner.l
+2. cc lex.yy.c
+3. ./a.out 
