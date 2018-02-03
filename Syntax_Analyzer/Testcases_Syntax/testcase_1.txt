@@ -1,0 +1,24 @@
+#include<stdio.h>
+#include<math.h>
+
+int main()
+{
+int a=6, b;
+while ( a < b; )
+{
+     a += 1;
+     b -= 1;
+}
+if ( a<10 )
+     printf("Value is less than 10");
+else
+{
+     if ( a>17 )
+         printf("Value is greater than 17");
+     else
+         printf("Value is lesser than 17");
+     else
+         printf("Error in calculation");
+}
+}
+

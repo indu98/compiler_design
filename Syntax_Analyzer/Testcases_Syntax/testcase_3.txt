@@ -1,0 +1,19 @@
+#include<stdio.h>
+#define b 7
+
+int main(int argc. int *argv[])
+{
+  int a=9, c=3;
+  switch(a)
+  {
+     case 1: switch(c)
+        {
+           case 2: printf("%d",i);
+           break;
+           case 3: printf("Value of c is 4");
+        }
+          break;
+     case 6 printf("Value of a is 6");
+     default: printf("None of the values");
+  }
+}

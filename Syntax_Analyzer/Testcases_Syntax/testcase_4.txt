@@ -1,0 +1,19 @@
+#include<stdio.h>
+
+int main()
+{
+  int i, a=4;
+  for(i=0;i<10)
+    printf("Hi");
+  do
+    {
+       printf("%d",a);
+       j=3;
+       a++;
+       do;
+       {
+         printf("Bye");
+         j++;
+       }while(j<=10);
+    }while(a<10);
+}

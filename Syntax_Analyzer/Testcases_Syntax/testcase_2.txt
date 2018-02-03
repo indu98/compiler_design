@@ -1,0 +1,19 @@
+#include<stdio.h>
+
+union u
+{
+  int a,b;
+}boat;
+
+struct s
+{
+  int a, b;
+}car
+
+int main()
+{
+  printf("%d", car.a);
+  printf("%d", boat->.a);
+  int value=6
+  printf("%d",value)
+}

@@ -1,0 +1,25 @@
+#include<stdio.h>
+
+struct st
+{
+int a,b;
+}example;
+
+int main()
+{
+int a=1,b=3;
+
+// We try to compare the values of a and b
+
+if (a<b)
+  printf("Value of b is more");
+else
+  {
+    if (a==b)
+      printf("a and b are equal");
+    else
+      printf("Value of a is more");
+  }
+printf("%d\n",example.a);
+
+}
