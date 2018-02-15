@@ -1,13 +1,14 @@
+
+alpha 			[A-Za-z_]
+digit 			[0-9]
+space 			[ ]
+
 %{
-
-#include<stdio.h>
-#include<stdlib.h>
-#include<string.h>
-
+int yylineno; 
+#include <stdio.h>
 struct symbol
 {
 char values[100];
-int line_number;
 char type[15];
 };
 
@@ -15,7 +16,6 @@ int k=0, j=0, i=0;
 typedef struct symbol s;
 s ident[100];
 s constant[100];
-int line=1, comment=0, quote_error=0;
 
 void insert(int a, char val[], char type[])
 {
@@ -27,7 +27,6 @@ if(strcmp(val, constant[k].values)==0)
 return;
 }
 strcpy(constant[j].values, val);
-constant[j].line_number=line;
 strcpy(constant[j].type, type);
 j++;
 }
@@ -42,144 +41,118 @@ strcpy(ident[i].values, val);
 strcpy(ident[i].type, type);
 i++;
 }
-}
-
+} 
 %}
 
-digit [0-9]
-alpha [a-zA-Z]
-alphanum [0-9a-zA-Z]
-keyword auto|break|case|char|const|continue|default|do|else|double|enum|extern|float|for|goto|if|long|int|printf|scanf|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while
-identi ({alpha}|_)({alpha}|{digit}|_)*
-white [ \t]+
-sign [\+\-]?
-invalid_identifier {digit}+{alpha}({alpha}|{digit})*
+%%	
+\n   { yylineno++; }
+"/*"					{ multicomment(); }
+"//"					{ singlecomment(); }
+"#include<"({alpha})*".h>" {}
+"#define"({space})""({alpha})""({alpha}|{digit})*""({space})""({digit})+"" 			{ return DEF;}
+{digit}+    				{  insert(0,yytext,"Integer"); return CONSTANT; }
+({digit}+)\.({digit}+) 			{  insert(0,yytext,"Float"); return CONSTANT; }
+{alpha}?\"(\\.|[^\\"])*\"		{  insert(0,yytext,"String Literal"); return STRING_LITERAL; } 
+"sizeof"				{  return SIZEOF; }
+"->"			{  return PTR_OP; }
+"++"			{  return INC_OP; }
+"--"			{  return DEC_OP; }
+"<<"			{  return LEFT_OP; }
+">>"			{  return RIGHT_OP; }
+"<="			{  return LE_OP; }
+">="			{  return GE_OP; }
+"=="			{  return EQ_OP; }
+"!="			{  return NE_OP; }
+"&&"			{  return AND_OP; }
+"||"			{  return OR_OP; }
+"*="			{  return MUL_SHORT; }
+"/="			{  return DIV_SHORT; }
+"%="			{  return MOD_SHORT; }
+"+="			{  return ADD_SHORT; }
+"-="			{  return SUB_SHORT; }
+"<<="			{  return LEFT_SHORT; }
+">>="			{  return RIGHT_SHORT; }
+"&="			{  return AND_SHORT; }
+"^="			{  return XOR_SHORT; }
+"|="			{  return OR_SHORT; }
+"typedef"		{  return TYPEDEF; }
+"extern"		{  return EXTERN; }
+"static"		{  return STATIC; }
+"auto"			{  return AUTO; }
+"register"		{  return REGISTER; }
+"char"			{  return CHAR; }
+"int"			{  return INT; }
+"float"			{  return FLOAT; }
+"const"			{  return CONST; }
+"volatile"		{  return VOLATILE; }
+"void"			{  return VOID; }
+"struct"		{  return STRUCT; }
+"union"			{  return UNION; }
+"enum"			{  return ENUM; }
+"case"			{  return CASE; }
+"default"		{  return DEFAULT; }
+"if"			{  return IF; }
+"else"			{  return ELSE; }
+"switch"		{  return SWITCH; }
+"while"			{  return WHILE; }
+"do"			{  return DO; }
+"for"			{  return FOR; }
+"goto"			{  return GOTO; }
+"continue"		{  return CONTINUE; }
+"break"			{  return BREAK; }
+"return"		{  return RETURN; }
+";"			{  return(';'); }
+("{"|"<%")		{  return('{'); }
+("}"|"%>")		{  return('}'); }
+","			{  return(','); }
+":"			{  return(':'); }
+"="			{  return('='); }
+"("			{  return('('); }
+")"			{  return(')'); }
+("["|"<:")		{  return('['); }
+("]"|":>")		{  return(']'); }
+"."			{  return('.'); }
+"&"			{  return('&'); }
+"!"			{  return('!'); }
+"~"			{  return('~'); }
+"-"			{  return('-'); }
+"+"			{  return('+'); }
+"*"			{  return('*'); }
+"/"			{  return('/'); }
+"%"			{  return('%'); }
+"<"			{  return('<'); }
+">"			{  return('>'); }
+"^"			{  return('^'); }
+"|"			{  return('|'); }
+"?"			{  return('?'); }
+"printf"                {insert(1,yytext,"Function");return IDENTIFIER; }
+"main"                  {insert(1,yytext,"Function");return IDENTIFIER; }
+{alpha}({alpha}|{digit})*    {insert(1,yytext,"Identifier");return IDENTIFIER; }
+[ \t\v\n\f]		{  }
+.			{ /* ignore any other illegal characters */ }
 %%
-
-\n {line++;}
-
-"//".* {
-printf("Single line comment\n");
-}
-
-\/\* {
-comment++;
-printf("Multiline comment starts\n");
-}
-
-\*\/ {
-if(comment>0)
+yywrap()
 {
-comment--;
-printf("Closing of multiline comment\n");
+	return(1);
 }
-else
-printf("Multiline comment doesn't have a start, Error occured at line %d\n",line);
-}
-
-#include<.*> { 
-if(comment<=0) 
-printf("Preprocessor directive:\t\t\t\t%s\n", yytext); 
-}
-
-{keyword} {
-if(comment<=0)
+multicomment()
 {
-insert(1, yytext, "keyword");
-printf("Keyword:\t\t\t\t%s\n", yytext);
+	char c, c1;
+	while ((c = input()) != '*' && c != 0);
+	c1=input();
+	if(c=='*' && c1=='/')
+	{
+		c=0;
+	}
+	if (c != 0)
+		putchar(c1);
 }
-}
-
-{white} {;}
-
-"\\t"|"\\n"|"\\b"|"\\a" { 
-if(comment<=0)
-printf("Escape character:\t\t\t\t%s\n", yytext);
-}
-
-{identi} {
-if(comment<=0)
+singlecomment()
 {
-insert(1, yytext, "identifier");
-printf("Identifier:\t\t\t\t%s\n", yytext);
-}
-}
-
-"*"|"+"|"-"|"/"|"++"|"--"|"!"|"~"|"<<"|">>"|"<="|"<"|">"|"=="|"!="|"&"|"^"|"|"|"&&"|"\||"|"*="|"+="|"-="|"="|"&="|"^="|","|">>="|"<<="|"="|"%"|"=" {
-if(comment<=0) 
-printf("Operator is found:\t\t\t\t%s\n", yytext);
-}
-
-"."|"'""|"\"|"#"|"("|")"|"["|"]"|"$"|";"|":"|"{"|"}" {
-if(comment<=0)
-printf("Special character:\t\t\t\t%s\n", yytext);
-} 
-
-{sign}?{digit}*\.{digit}+ { 
-if(comment<=0)
-{
-insert(0, yytext, "float");
-printf("Floating point constant:\t\t\t\t%s\n", yytext);
-}
-}
-
-{sign}?{digit}+ {
-if(comment<=0)
-{
-insert(0, yytext, "integer");
-printf("Integer constant:\t\t\t\t%s\n", yytext);
-}
-}
-
-
-\"(\\.|[^"\\])*\" {
-if(comment<=0)
-printf("String literal:\t\t\t\t%s\n", yytext);
-}
-
-{identi}\(({alphanum}|{white}|\,)*\) {
-if(comment<=0)
-printf("Function:\t\t\t\t%s\n", yytext);
-}
-
-{identi}(\[{digit}+\])+ {
-if(comment<=0)
-printf("Array:\t\t\t\t%s\n", yytext);
-}
-
-\"(\\.|[^"\\])* {
-if(comment<=0)
-printf("String literal is not ending until EOF\n");
-}
-
-{invalid_identifier} {
-if(comment<=0)
-printf("Invalid identifier name %s at line number %d\n", yytext, line);
-}
-
-
-%%
-int main()
-{
-printf("\n\n\n\n\n");
-FILE *file;
-file=fopen("Testcases_Scanner/testcase_6.txt", "r");
-yyin=file;
-yylex();
-if(comment!=0)
-printf("Multiline comment error found\n");
-printf("\n___________CONSTANTS TABLE____________\n");
-printf("\nName\t\t\tType\t\t\tLine\n");
-for(k=0; k<j; k++)
-printf("%s\t\t\t%s\t\t\t%d\n", constant[k].values, constant[k].type, constant[k].line_number);
-printf("\n");
-printf("\n___________SYMBOLS TABLE_____________\n");
-printf("\nName\t\t\tType\n");
-for(k=0; k<i; k++)
-printf("%s\t\t\t%s\n", ident[k].values, ident[k].type);
-printf("\n\n\n\n\n\n");
-}
-int yywrap()
-{
-return(1);
+	char c;
+	while(c=input()!='\n');
+	if(c=='\n')
+		c=0;
+	if(c!=0)
+		putchar(c);
 }
