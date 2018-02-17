@@ -137,10 +137,10 @@ conditional_expression
 
 assignment_expression
 	: conditional_expression
-	| unary_expression ass_op assignment_expression
+	| unary_expression assign_op assignment_expression
 	;
 
-ass_op
+assign_op
 	: '='
 	| MUL_SHORT
 	| DIV_SHORT
