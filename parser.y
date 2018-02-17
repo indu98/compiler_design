@@ -17,6 +17,7 @@
 %token STRUCT UNION ENUM 
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
 %start translation_unit
+%glr-parser
 %%
 
 Define
@@ -136,10 +137,10 @@ conditional_expression
 
 assignment_expression
 	: conditional_expression
-	| unary_expression assign_op assignment_expression
+	| unary_expression ass_op assignment_expression
 	;
 
-assign_op
+ass_op
 	: '='
 	| MUL_SHORT
 	| DIV_SHORT
@@ -425,12 +426,11 @@ function_definition
 	| declarator declaration_list compound_statement
 	| declarator compound_statement
 	;
-         
+
 %%
 #include"lex.yy.c"
 #include <ctype.h>
 #include <stdio.h>
-
 void print_constant()
 {
 printf("\n___________CONSTANTS TABLE____________\n");
@@ -439,7 +439,6 @@ for(k=0; k<j; k++)
 printf("%s\t\t\t%s\n", constant[k].values, constant[k].type);
 printf("\n");
 }
-
 void print_symbols()
 {
 printf("\n___________SYMBOLS TABLE_____________\n");
@@ -448,11 +447,9 @@ for(k=0; k<i; k++)
 printf("%s\t\t\t%s\n", ident[k].values, ident[k].type);
 printf("\n\n\n");
 }
-
 int main(int argc, char *argv[])
 {
 	yyin = fopen(argv[1], "r");
-
 	if(!yyparse())
 		{
                  print_constant();
@@ -461,12 +458,10 @@ int main(int argc, char *argv[])
                 }
 	else
 		printf("\nParsing failed\n");
-
 	fclose(yyin);
 	return 0;
 }
 extern char *yytext;
-
 yyerror(char *s) 
 {
 	printf("\nLine %d : %s\n", (yylineno), s);
