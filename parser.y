@@ -1,468 +1,328 @@
-%expect 24
+%{
+	#include <stdio.h>
+	#include <stdlib.h>
+        int index1=0;
+        int function=0;
+	#include "symbol.c"
+int i=1;
+int j=8;
+int stack[100];
+int end[100];
+int arr[10];
+int gl1,gl2,ct=0,c=0,b;
+%}
 
-%nonassoc NO_ELSE
-%nonassoc  ELSE 
-%left '<' '>' '=' GE_OP LE_OP EQ_OP NE_OP 
-%left  '+'  '-'
-%left  '*'  '/' '%'
-%left  '|'
-%left  '&'
-%token IDENTIFIER CONSTANT STRING_LITERAL SIZEOF
-%token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
-%token AND_OP OR_OP MUL_SHORT DIV_SHORT MOD_SHORT ADD_SHORT
-%token SUB_SHORT LEFT_SHORT RIGHT_SHORT AND_SHORT
-%token XOR_SHORT OR_SHORT TYPE_NAME DEF
-%token TYPEDEF EXTERN STATIC AUTO REGISTER
-%token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
-%token STRUCT UNION ENUM 
-%token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
-%start translation_unit
-%glr-parser
+%token<ival> INT FLOAT VOID
+%token<str> ID NUM REAL
+%token WHILE IF RETURN PREPROC LE STRING PRINT FUNCTION DO ARRAY ELSE STRUCT  
+%right '='
+
+%type<str> assignment1 consttype assignment2 
+%type<ival> Type 
+
+%union {
+		int ival;
+		char *str;
+	}
+
 %%
 
-Define
-	: DEF ;
-
-primary_exp
-	: IDENTIFIER
-	| CONSTANT
-	| STRING_LITERAL
-	| '(' expression ')'
-	| Define primary_exp
+start : Function start 
+	| PREPROC start 
+	| Declaration start
+        | Function1 start
+	| 
 	;
 
+Function1 : Type ID '(' ')' ';' {
+            insert($2,FUNCTION,0,nesting());
+            insert($2,$1,0,nesting());
+            }
+            | Type ID '(' Argument ')' ';' {
+            insert($2,FUNCTION,0,nesting());
+            insert($2,$1,0,nesting());
+            } ;
 
+Function : Type ID '('')' CompoundStmt {
+	if ($1!=returntype_func(ct))
+	{
+		printf("\nError : Type mismatch : Line %d\n",printline());
+	}
 
-postfix_exp
-	: primary_exp
-	| postfix_exp INC_OP
-	| postfix_exp DEC_OP
-	| postfix_exp PTR_OP IDENTIFIER 
-	| postfix_exp '(' argument_expression_list ')'
-	| postfix_exp '.' IDENTIFIER
-	|  postfix_exp '[' expression ']'
-	| postfix_exp '(' ')'
+	if (!(strcmp($2,"printf") && strcmp($2,"scanf") && strcmp($2,"getc") && strcmp($2,"gets") && strcmp($2,"getchar") && strcmp	($2,"puts") && strcmp($2,"putchar"))) 
+		printf("Error : Type mismatch in redeclaration of %s : Line %d\n",$2,printline()); 
+	else 
+	{       
+                if(!lookup($2))
+                {
+		st[location($2)].flag=1;
+                }
+                else
+                {
+		insert($2,FUNCTION,1,nesting()); 
+		insert($2,$1,1,nesting()); 
+                }
+	}
+	}
+        | Type ID '(' Argument ')' CompoundStmt {
+	if ($1!=returntype_func(ct))
+	{
+		printf("\nError : Type mismatch : Line %d\n",printline());
+	}
+
+	if (!(strcmp($2,"printf") && strcmp($2,"scanf") && strcmp($2,"getc") && strcmp($2,"gets") && strcmp($2,"getchar") && strcmp	($2,"puts") && strcmp($2,"putchar"))) 
+		printf("Error : Type mismatch in redeclaration of %s : Line %d\n",$2,printline()); 
+	else 
+	{  
+                if(!lookup($2))
+                {
+                function++;
+		st[location($2)].flag=1;
+                }
+                else
+                {
+                insert_func_name(function,$2);
+                function++;
+		insert($2,FUNCTION,1,nesting()); 
+		insert($2,$1,1,nesting()); 
+                }
+                
+	}
+	}
 	;
 
-argument_expression_list
-	: assignment_expression
-	| argument_expression_list ',' assignment_expression
+Argument : Type ID ',' Argument {insert_func_param(function,$1);int scope=stack[index1-1]+1;  
+			insert($2,$1,0,nesting()+1); 
+			insertscope($2,scope);}
+           | Type ID {insert_func_param(function,$1);int scope=stack[index1-1]+1;  
+			insert($2,$1,0,nesting()+1); 
+			insertscope($2,scope);};
+
+Type : INT
+	| FLOAT
+	| VOID
 	;
 
-unary_expression
-	: postfix_exp
-	| INC_OP unary_expression
-	| DEC_OP unary_expression
-	| unary_op cast_expression
-	| SIZEOF unary_expression
-	| SIZEOF '(' type_name ')'
+CompoundStmt : '{' StmtList '}'
 	;
 
-unary_op
-	: '&'
-	| '*'
-	| '+'
-	| '-'
-	| '~'
-	| '!'
+StmtList : StmtList stmt
+	| CompoundStmt
+	|
 	;
 
-cast_expression
-	: unary_expression
-	| '(' type_name ')' cast_expression
+stmt : Declaration
+	| if
+	| while
+	| dowhile
+	| RETURN consttype ';' {
+					if(!(strspn($2,"0123456789")==strlen($2))) 
+						storereturn(ct,FLOAT); 
+					else 
+						storereturn(ct,INT); ct++;
+				} 
+	| RETURN ';' {storereturn(ct,VOID); ct++;}
+	| ';'
+	| PRINT '(' STRING ')' ';' 
+	| CompoundStmt
 	;
 
-multiplicative_expression
-	: cast_expression
-	| multiplicative_expression '*' cast_expression
-	| multiplicative_expression '/' cast_expression
-	| multiplicative_expression '%' cast_expression
+dowhile : DO CompoundStmt WHILE '(' expr1 ')' ';'
 	;
 
-additive_expression
-	: multiplicative_expression
-	| additive_expression '+' multiplicative_expression
-	| additive_expression '-' multiplicative_expression
+if : IF '(' expr1 ')' CompoundStmt
+	| IF '(' expr1 ')' CompoundStmt ELSE CompoundStmt
 	;
 
-shift_expression
-	: additive_expression
-	| shift_expression LEFT_OP additive_expression
-	| shift_expression RIGHT_OP additive_expression
+while : WHILE '(' expr1 ')' CompoundStmt
 	;
 
-relational_expression
-	: shift_expression
-	| relational_expression '<' shift_expression
-	| relational_expression '>' shift_expression
-	| relational_expression LE_OP shift_expression
-	| relational_expression GE_OP shift_expression
+expr1 : expr1 LE expr1
+	| assignment1
 	;
 
-equality_expression
-	: relational_expression
-	| equality_expression EQ_OP relational_expression
-	| equality_expression NE_OP relational_expression
+assignment1 : ID '=' assignment1 
+	{
+		int sct=returnscope($1,stack[index1-1]); 
+		int type=returntype($1,sct); 
+		if((!(strspn($3,"0123456789")==strlen($3))) && type==258) 
+			printf("\nError : Type Mismatch : Line %d\n",printline()); 
+		if(!lookup($1)) 
+		{ 
+			int currscope=stack[index1-1]; 
+			int scope=returnscope($1,currscope); 
+			if((scope<=currscope && end[scope]==0) && !(scope==0)) 
+				check_scope_update($1,$3,currscope);
+		} 
+		}
+
+	| ID ',' assignment1    {
+					if(lookup($1)) 
+						printf("\nUndeclared Variable %s : Line %d\n",$1,printline());
+				}
+	| assignment2
+	| consttype ',' assignment1   
+	| ID  {
+		if(lookup($1)) 
+			printf("\nUndeclared Variable %s : Line %d\n",$1,printline());
+		}
+	| consttype
 	;
 
-and_expression
-	: equality_expression
-	| and_expression '&' equality_expression
+assignment2 : ID '=' exp {c=0;}
+		| ID '=' '(' exp ')'
+		;
+
+exp : ID {
+	if(c==0) 
+	{
+		c=1;
+		int sct=returnscope($1,stack[index1-1]); 
+		b=returntype($1,sct);
+	} 
+	else 
+	{ 
+		int sct1=returnscope($1,stack[index1-1]); 
+		if(b!=returntype($1,sct1)) 
+			printf("\nError : Type Mismatch : Line %d\n",printline());
+	} 
+	}
+	| exp '+' exp   
+	| exp '-' exp  
+	| exp '*' exp   
+	| exp '/' exp    
+	| '(' exp '+' exp ')' 
+	| '(' exp '-' exp ')'  
+	| '(' exp '*' exp ')'  
+	| '(' exp '/' exp ')'  
+	| consttype 
 	;
 
-exclusive_or_expression
-	: and_expression
-	| exclusive_or_expression '^' and_expression
+consttype : NUM
+	| REAL
 	;
 
-inclusive_or_expression
-	: exclusive_or_expression
-	| inclusive_or_expression '|' exclusive_or_expression
-	;
+Declaration : Type ID ';'
+              {  if(!lookup($2)) 
+		{
+			int currscope=stack[index1-1]; 
+			int previous_scope=returnscope($2,currscope); 
+			if(currscope==previous_scope) 
+				printf("\nError : Redeclaration of %s : Line %d\n",$2,printline()); 
+			else 
+			{
+				insert_dup($2,$1,currscope,nesting()); 
+			}
+		} 
+		else 
+		{ 
+			int scope=stack[index1-1];  
+			insert($2,$1,0,nesting()); 
+			insertscope($2,scope); 
+		}
+              }
+        | Type ID '=' consttype ';' 
+	{
+		if( (!(strspn($4,"0123456789")==strlen($4))) && $1==258) 
+			printf("\nError : Type Mismatch : Line %d\n",printline()); 
+		if(!lookup($2)) 
+		{
+			int currscope=stack[index1-1]; 
+			int previous_scope=returnscope($2,currscope); 
+			if(currscope==previous_scope) 
+				printf("\nError : Redeclaration of %s : Line %d\n",$2,printline()); 
+			else 
+			{
+				insert_dup($2,$1,currscope,nesting());
+				check_scope_update($2,$4,stack[index1-1]); 
+			}
+		} 
+		else 
+		{ 
+			int scope=stack[index1-1];  
+			insert($2,$1,0,nesting()); 
+			insertscope($2,scope); 
+			check_scope_update($2,$4,stack[index1-1]); 
+		}
+	}
+	| assignment1 ';'  {
+				if(!lookup($1)) 
+				{ 
+					int currscope=stack[index1-1]; 
+					int scope=returnscope($1,currscope); 
+					if(!(scope<=currscope && end[scope]==0) || scope==0) 
+						printf("\nError : Variable %s out of scope : Line %d\n",$1,printline());
+				} 
+				else 
+					printf("\nError : Undeclared Variable %s : Line %d\n",$1,printline()); 
+				}
 
-logical_and_expression
-	: inclusive_or_expression
-	| logical_and_expression AND_OP inclusive_or_expression
-	;
+	| Type ID '[' NUM ']' ';' {
+						insert($2,ARRAY,0,nesting());
+                                                int scope=stack[index1-1]; 
+                                                insertscope($2,scope); 
+						insert($2,$1,0,nesting()); 
+                                                if((int)(atof($4))<1)
+                                                {
+                                                printf("\nError : Array of size less than 1 : Line %d\n",printline());
+                                                } 
+                                                else
+                                                storevalue($2,$4,stack[index1-1]);
+			 	       }
 
-logical_or_expression
-	: logical_and_expression
-	| logical_or_expression OR_OP logical_and_expression
-	;
-
-conditional_expression
-	: logical_or_expression
-	| logical_or_expression '?' expression ':' conditional_expression
-	;
-
-assignment_expression
-	: conditional_expression
-	| unary_expression assign_op assignment_expression
-	;
-
-assign_op
-	: '='
-	| MUL_SHORT
-	| DIV_SHORT
-	| MOD_SHORT
-	| ADD_SHORT
-	| SUB_SHORT
-	| LEFT_SHORT
-	| RIGHT_SHORT
-	| AND_SHORT
-	| XOR_SHORT
-	| OR_SHORT
-	;
-expression
-	: assignment_expression
-	| expression ',' assignment_expression
-	;
-
-constant_expression
-	: conditional_expression
-	;
-
-declaration
-	: declaration_specifiers ';'
-	| declaration_specifiers init_declarator_list ';'
+	| STRUCT ID '{' Declaration '}' ';' {
+						insert($2,STRUCT,0,nesting()); 
+					    }
 	| error
 	;
 
-declaration_specifiers
-	: storage_class
-	| storage_class declaration_specifiers
-	| data_type
-	| data_type declaration_specifiers
-	| type_qualifier
-	| type_qualifier declaration_specifiers
-	;
 
-init_declarator_list
-	: init_declarator
-	| init_declarator_list ',' init_declarator
-	;
-
-init_declarator
-	: declarator
-	| declarator '=' initializer
-	;
-
-storage_class
-	: REGISTER
-	| EXTERN
-	| TYPEDEF
-	| AUTO
-	| STATIC
-	;
-
-data_type
-	: VOID
-	| CHAR
-	| SHORT
-	| INT
-	| LONG
-	| FLOAT
-	| DOUBLE
-	| SIGNED
-	| UNSIGNED
-	| struct_or_union_specifier
-	| enum_specifier
-	| TYPE_NAME
-	;
-
-struct_or_union_specifier
-	: struct_or_union IDENTIFIER '{' struct_declaration_list '}'
-	| struct_or_union '{' struct_declaration_list '}'
-	| struct_or_union IDENTIFIER
-	;
-
-struct_or_union
-	: STRUCT
-	| UNION
-	;
-
-struct_declaration_list
-	: struct_declaration
-	| struct_declaration_list struct_declaration
-	;
-
-struct_declaration
-	: specifier_qualifier_list struct_declarator_list ';'
-	;
-
-specifier_qualifier_list
-	: data_type specifier_qualifier_list
-	| data_type
-	| type_qualifier specifier_qualifier_list
-	| type_qualifier
-	;
-
-struct_declarator_list
-	: struct_declarator
-	| struct_declarator_list ',' struct_declarator
-	;
-
-struct_declarator
-	: declarator
-	| ':' constant_expression
-	| declarator ':' constant_expression
-	;
-
-enum_specifier
-	: ENUM '{' enumerator_list '}'
-	| ENUM IDENTIFIER '{' enumerator_list '}'
-	| ENUM IDENTIFIER
-	;
-
-enumerator_list
-	: enumerator
-	| enumerator_list ',' enumerator
-	;
-
-enumerator
-	: IDENTIFIER
-	| IDENTIFIER '=' constant_expression
-	;
-
-type_qualifier
-	: CONST
-	| VOLATILE
-	;
-
-declarator
-	: pointer direct_declarator
-	| direct_declarator
-	;
-
-direct_declarator
-	: IDENTIFIER
-	| '(' declarator ')'
-	| direct_declarator '[' constant_expression ']'
-	| direct_declarator '[' ']'
-	| direct_declarator '(' parameter_type_list ')'
-	| direct_declarator '(' identifier_list ')'
-	| direct_declarator '(' ')'
-	;
-
-pointer
-	: '*'
-	| '*' type_qualifier_list
-	| '*' pointer
-	| '*' type_qualifier_list pointer
-	;
-
-type_qualifier_list
-	: type_qualifier
-	| type_qualifier_list type_qualifier
-	;
-
-
-parameter_type_list
-	: parameter_list
-	;
-
-parameter_list
-	: parameter_declaration
-	| parameter_list ',' parameter_declaration
-	;
-
-parameter_declaration
-	: declaration_specifiers declarator
-	| declaration_specifiers abstract_declarator
-	| declaration_specifiers
-	;
-
-identifier_list
-	: IDENTIFIER
-	| identifier_list ',' IDENTIFIER
-	;
-
-type_name
-	: specifier_qualifier_list
-	| specifier_qualifier_list abstract_declarator
-	;
-
-abstract_declarator
-	: pointer
-	| direct_abstract_declarator
-	| pointer direct_abstract_declarator
-	;
-
-direct_abstract_declarator
-	: '(' abstract_declarator ')'
-	| '[' ']'
-	| '[' constant_expression ']'
-	| direct_abstract_declarator '[' ']'
-	| direct_abstract_declarator '[' constant_expression ']'
-	| '(' ')'
-	| '(' parameter_type_list ')'
-	| direct_abstract_declarator '(' ')'
-	| direct_abstract_declarator '(' parameter_type_list ')'
-	;
-
-initializer
-	: assignment_expression
-	| '{' initializer_list '}'
-	| '{' initializer_list ',' '}'
-	;
-
-initializer_list
-	: initializer
-	| initializer_list ',' initializer
-	;
-
-statement
-	: labeled_statement
-	| compound_statement
-	| expression_statement
-	| selection_statement
-	| loop_stmt
-	| jump_statement
-	;
-
-labeled_statement
-	: IDENTIFIER ':' statement
-	| CASE constant_expression ':' statement
-	| DEFAULT ':' statement
-	;
-
-compound_statement
-	: '{' '}'
-	| '{' statement_list '}'
-	| '{' declaration_list '}'
-	| '{' declaration_list statement_list '}'
-	;
-
-declaration_list
-	: declaration
-	| declaration_list declaration
-	;
-
-statement_list
-	: statement
-	| statement_list statement
-	;
-
-expression_statement
-	: ';'
-	| expression ';'
-	;
-
-selection_statement
-	: IF '(' expression ')' statement    %prec NO_ELSE
-	| IF '(' expression ')' statement ELSE statement
-	| SWITCH '(' expression ')' statement
-	;
-
-loop_stmt
-	: WHILE '(' expression ')' statement
-	| DO statement WHILE '(' expression ')' ';'
-	| FOR '(' expression_statement expression_statement ')' statement
-	| FOR '(' expression_statement expression_statement expression ')' statement
-	;
-
-jump_statement
-	: GOTO IDENTIFIER ';'
-	| CONTINUE ';'
-	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
-	;
-
-translation_unit
-	: external_declaration
-	| translation_unit external_declaration
-	| Define translation_unit
-	;
-
-external_declaration
-	: function_definition
-	| declaration
-	;
-
-function_definition
-	: declaration_specifiers declarator declaration_list compound_statement
-	| declaration_specifiers declarator compound_statement
-	| declarator declaration_list compound_statement
-	| declarator compound_statement
-	;
 
 %%
-#include"lex.yy.c"
-#include <ctype.h>
-#include <stdio.h>
-void print_constant()
-{
-printf("\n___________CONSTANTS TABLE____________\n");
-printf("\nName\t\t\tType\n");
-for(k=0; k<j; k++)
-printf("%s\t\t\t%s\n", constant[k].values, constant[k].type);
-printf("\n");
-}
-void print_symbols()
-{
-printf("\n___________SYMBOLS TABLE_____________\n");
-printf("\nName\t\t\tType\n");
-for(k=0; k<i; k++)
-printf("%s\t\t\t%s\n", ident[k].values, ident[k].type);
-printf("\n\n\n");
-}
+
+#include "lex.yy.c"
+#include<ctype.h>
 int main(int argc, char *argv[])
 {
-	yyin = fopen(argv[1], "r");
+	yyin =fopen(argv[1],"r");
 	if(!yyparse())
-		{
-                 print_constant();
-                 print_symbols();
-                 printf("\nParsing complete\n");
-                }
+	{
+		printf("Parsing done\n");
+		print();
+	}
 	else
-		printf("\nParsing failed\n");
+	{
+		printf("Error\n");
+	}
 	fclose(yyin);
 	return 0;
 }
-extern char *yytext;
-yyerror(char *s) 
+
+yyerror(char *s)
 {
-	printf("\nLine %d : %s\n", (yylineno), s);
-}         
+	printf("\nLine %d : %s %s\n",yylineno,s,yytext);
+}
+
+int nesting()
+{
+return count;
+}
+
+int printline()
+{
+	return yylineno;
+}
+void open1()
+{
+	stack[index1]=i;
+	i++;
+	index1++;
+	return;
+}
+void close1()
+{
+	index1--;
+	end[stack[index1]]=1;
+	stack[index1]=0;
+	return;
+}
