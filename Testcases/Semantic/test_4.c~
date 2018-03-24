@@ -11,9 +11,6 @@ int sum(int a,int b)
 int main()
 {
 	int a=5.4;
-	int b=sum(3,4);
-	int b=wum(3,4);
-	int b=sum(3,4,2);
 	do
 	{
 		int q=4;

@@ -20,6 +20,24 @@ struct function_table
 }func[20];
 
 int n=0,arr[10];
+
+int lookup_func (char *a)
+{
+int i;
+for(i=0;i<function;i++)
+{
+if(strcmp(a,func[i].name)==0)
+{
+return i;
+}
+}
+return -1;
+}
+
+int number_param (int i)
+{
+return func[i].num;
+}
 int returntype_func(int ct)
 {
 	return arr[ct-1];

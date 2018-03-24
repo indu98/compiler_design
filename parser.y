@@ -33,6 +33,27 @@ start : Function start
         | Function1 start
 	| 
 	;
+	
+	
+Declaration1 : Type ID ';'
+              {  if(!lookup($2)) 
+		{
+			int currscope=stack[index1-1]; 
+			int previous_scope=returnscope($2,currscope); 
+			if(currscope==previous_scope) 
+				printf("\nError : Redeclaration of %s : Line %d\n",$2,printline()); 
+			else 
+			{
+				insert_dup($2,$1,currscope,nesting()); 
+			}
+		} 
+		else 
+		{ 
+			int scope=stack[index1-1];  
+			insert($2,$1,0,nesting()); 
+			insertscope($2,scope); 
+		}
+              } ;
 
 Function1 : Type ID '(' ')' ';' {
             insert($2,FUNCTION,0,nesting());
@@ -110,6 +131,7 @@ StmtList : StmtList stmt
 	| CompoundStmt
 	|
 	;
+	
 
 stmt : Declaration
 	| if
@@ -125,6 +147,7 @@ stmt : Declaration
 	| ';'
 	| PRINT '(' STRING ')' ';' 
 	| CompoundStmt
+	| function_call
 	;
 
 dowhile : DO CompoundStmt WHILE '(' expr1 ')' ';'
@@ -140,6 +163,38 @@ while : WHILE '(' expr1 ')' CompoundStmt
 expr1 : expr1 LE expr1
 	| assignment1
 	;
+	
+constant_list: consttype ',' consttype;
+
+constant_list2: consttype ',' consttype ',' consttype;
+
+function_call: ID '=' ID '(' constant_list ')' ';' {int k=lookup_func($3);if(k==-1) 
+printf(" \nUndefined function : Line %d\n",printline());
+else
+{
+if(number_param(k)!=2)
+printf("\nNumber of parameters is invalid : Line %d\n",printline());
+}
+} 
+|
+ID '=' ID '(' constant_list2 ')' ';' {int k=lookup_func($3);if(k==-1) 
+printf(" \nUndefined function : Line %d\n",printline());
+else
+{
+if(number_param(k)!=3)
+printf("\nNumber of parameters is invalid : Line %d\n",printline());
+}
+}
+|
+ID '=' ID '(' consttype ')' ';' {int k=lookup_func($3);if(k==-1) 
+printf(" \nUndefined function : Line %d\n",printline());
+else
+{
+if(number_param(k)!=1)
+printf("\nNumber of parameters is invalid : Line %d\n",printline());
+}
+}
+; 
 
 assignment1 : ID '=' assignment1 
 	{
@@ -270,7 +325,7 @@ Declaration : Type ID ';'
                                                 storevalue($2,$4,stack[index1-1]);
 			 	       }
 
-	| STRUCT ID '{' Declaration '}' ';' {
+	| STRUCT ID '{' Declaration1 '}' ';' {
 						insert($2,STRUCT,0,nesting()); 
 					    }
 	| error
