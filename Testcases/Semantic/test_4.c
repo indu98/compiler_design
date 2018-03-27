@@ -11,15 +11,16 @@ int sum(int a,int b)
 int main()
 {
 	int a=5.4;
-	int b=sum(3,4);
-	int b=wum(3,4);
-	int b=sum(3,4,2);
+	int b;
+        b=sum(3,4);
+	b=wum(3,4);
+	b=sum(3,4,2);
 	do
 	{
 		int q=4;
 		q= q + 7 ;
 
-		printf("Here  an undeclared variable is getting returned");
+		printf("function call matching");
 
 	} 
 	return 8;

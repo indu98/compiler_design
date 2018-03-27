@@ -10,10 +10,9 @@ int foo(int x,int y)
 
 struct qwe
 {
-	int r;
+	int r = 1;
+        int s;
 };
-
-
 
 int main()
 {
