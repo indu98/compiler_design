@@ -4,8 +4,6 @@ int count=0;
 
 alpha [A-Za-z]
 digit [0-9]
-sign [+-]
-
 
 %%
 [ \t] ;
@@ -18,17 +16,24 @@ void	{yylval.ival = VOID; return VOID;}
 else	{return ELSE;}
 do	return DO;
 if	return IF;
-struct 	return STRUCT;
 ^"#include ".+	return PREPROC;
 while	return WHILE;
+for	return FOR;
 return 	return RETURN;
 printf	return PRINT;
 {alpha}({alpha}|{digit})* {yylval.str=strdup(yytext); return ID;}
-{sign}?{digit}+	{yylval.str=strdup(yytext);return NUM;}
+{digit}+	{yylval.str=strdup(yytext);return NUM;}
 {digit}+\.{digit}+ 	{yylval.str=strdup(yytext); return REAL;}
 "<="		return LE;
+">="		return GE;
+"=="		return EQ;
+"!="		return NEQ;
+"&&"		return AND;
+"||"		return OR;
 \/\/.* ;
 \/\*(.*\n)*.*\*\/ ;
 \".*\"	return STRING;
 .	return yytext[0];
 %%
+
+
