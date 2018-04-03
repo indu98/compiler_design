@@ -366,7 +366,7 @@ Function : Type ID '('')' {if(strcmp($2,"main")!=0) {printf("F%d:\n",function);f
 	if(strcmp($2,"main")!=0)
 	{
 	    insert_func($2,function-1,0);
-		printf("goto M\n");
+	    printf("goto M%d\n",function-1);
 	}
 	if ($1!=returntype_func(ct))
 	{
@@ -385,7 +385,7 @@ Function : Type ID '('')' {if(strcmp($2,"main")!=0) {printf("F%d:\n",function);f
 	if(strcmp($2,"main")!=0)
 	{
 	    insert_func($2,function-1,1);
-		printf("goto M\n");
+	    printf("goto M%d\n",function-1);
 	}
 	if ($1!=returntype_func(ct))
 	{
@@ -404,7 +404,7 @@ Function : Type ID '('')' {if(strcmp($2,"main")!=0) {printf("F%d:\n",function);f
 	if(strcmp($2,"main")!=0)
 	{
 	    insert_func($2,function-1,2);
-		printf("goto M\n");
+	    printf("goto M%d\n",function-1);
 	}
 	if ($1!=returntype_func(ct))
 	{
@@ -423,7 +423,7 @@ Function : Type ID '('')' {if(strcmp($2,"main")!=0) {printf("F%d:\n",function);f
 	if(strcmp($2,"main")!=0)
 	{
 	    insert_func($2,function-1,3);
-		printf("goto M\n");
+	    printf("goto M%d\n",function-1);
 	}
 	if ($1!=returntype_func(ct))
 	{
@@ -453,7 +453,10 @@ else
 if(number_param(k)!=0)
 printf("\nNumber of parameters is invalid : Line %d\n",printline());
 else
+{
 printf("goto F%d\n",k);
+printf("M%d:\n",k);
+}
 }
 }
 | ID '(' constant_list ')' ';' {int k=lookup_func($1);if(k==-1) 
@@ -463,7 +466,10 @@ else
 if(number_param(k)!=2)
 printf("\nNumber of parameters is invalid : Line %d\n",printline());
 else
+{
 printf("goto F%d\n",k);
+printf("M%d:\n",k);
+}
 }
 } 
 | ID '(' constant_list2 ')' ';' {int k=lookup_func($1);if(k==-1) 
@@ -473,7 +479,10 @@ else
 if(number_param(k)!=3)
 printf("\nNumber of parameters is invalid : Line %d\n",printline());
 else
+{
 printf("goto F%d\n",k);
+printf("M%d:\n",k);
+}
 }
 }
 | ID '(' consttype ')' ';' {int k=lookup_func($1);if(k==-1) 
@@ -483,7 +492,10 @@ else
 if(number_param(k)!=1)
 printf("\nNumber of parameters is invalid : Line %d\n",printline());
 else
+{
 printf("goto F%d\n",k);
+printf("M%d:\n",k);
+}
 } 
 }
 ;
