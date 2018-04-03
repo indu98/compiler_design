@@ -325,7 +325,7 @@ Declaration : Type ID ';'
 					printf("\nError : Undeclared Variable %s : Line %d\n",$1,printline()); 
 				}
 
-	| Type ID '[' INT ']' ';' {
+	| Type ID '[' NUM ']' ';' {
 						insert($2,ARRAY,nesting());
                                                 int scope=stack[index1-1]; 
                                                 insertscope($2,scope); 
