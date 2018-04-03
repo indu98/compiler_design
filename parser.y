@@ -266,6 +266,7 @@ assignment1 : ID {push($1);} '=' {strcpy(st1[++top],"=");} E {codegen_assign();}
 			if((scope<=currscope && end[scope]==0) && !(scope==0)) 
 			{
 				check_scope_update($1,$5,currscope);
+				
 			}
 		} 
 		}
@@ -321,8 +322,15 @@ Declaration : Type ID ';'
 			else 
 			{
 				insert_dup($2,$1,currscope,nesting());
-				check_scope_update($2,$6,stack[index1-1]);
-				int sg=returnscope($2,stack[index1-1]); 
+				int currscope=stack[index1-1]; 
+			int scope=returnscope($2,currscope); 
+			if((scope<=currscope && end[scope]==0) && !(scope==0)) 
+			{
+				check_scope_update($2,$6,currscope);
+				
+			}
+				//int sg=returnscope($2,stack[index1-1]); 
+				printf(" Test - %stest stck index- %d\n",$6,stack[index1-1]);
 			}
 		} 
 		else 
