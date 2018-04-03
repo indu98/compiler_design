@@ -17,7 +17,7 @@ It takes the token produced by lexical analysis as input and generates a parse t
 Semantic analysis checks whether the parse tree constructed follows the rules of language. The semantic analyzer produces an annotated syntax tree as an output.
 
 #### Intermediate Code Generation
- It produces a program for some abstract machine. It is in between the high-level language and the machine language.
+It produces a program for some abstract machine. It is in between the high-level language and the machine language.
  
  Execution Instruction:
  ```

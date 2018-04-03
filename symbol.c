@@ -10,6 +10,12 @@ struct sym
         int nest;
 	int scope;
 }st[100];
+struct function_sym
+{
+   int function;
+   int num_param;
+   char name[100];
+}func[100];
 int n=0,arr[10];
 float t[100];
 int iter=0;
@@ -69,7 +75,27 @@ int returntype(char *a,int sct)
 		}
 	}
 }
-
+void insert_func(char *a, int entry, int num_param)
+{
+strcpy(func[entry].name,a);
+func[entry].num_param=num_param;
+}
+int lookup_func (char *a)
+{
+int num;
+for(num=0;num<function;num++)
+{
+if(strcmp(a,func[num].name)==0)
+{
+return num;
+}
+}
+return -1;
+}
+int number_param (int a)
+{
+return func[a].num_param;
+}
 void check_scope_update(char *a,char *b,int sc)
 {
 	int i,j,k;
