@@ -1,7 +1,7 @@
 %{
 	#include <stdio.h>
 	#include <stdlib.h>
-int function=0;
+        int function=0;
 	#include "symbol.c"
 
 int i=1,lnum1=0,label1[20],ltop1;
@@ -225,14 +225,6 @@ else : ELSE CompoundStmt {if3();}
 
 while : WHILE {w1();}'(' E ')' {w2();} CompoundStmt {w3();}
 	;
-
-/*assignment : ID '=' consttype 
-	| ID '+' assignment 
-	| ID ',' assignment
-	| consttype ',' assignment
-	| ID
-	| consttype
-	;*/
 
 assignment1 : ID {push($1);} '=' {strcpy(st1[++top],"=");} E {codegen_assign();}  
 	{
@@ -505,6 +497,7 @@ printf("goto F%d\n",k);
 int main(int argc, char *argv[])
 {
 	yyin =fopen(argv[1],"r");
+        printf("goto M\n");
 	yyparse();
 	if(!yyparse())
 	{
