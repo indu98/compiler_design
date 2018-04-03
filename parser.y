@@ -440,9 +440,11 @@ Function : Type ID '('')' {if(strcmp($2,"main")!=0) {printf("F%d:\n",function);f
 	}
 	;
 
-constant_list: consttype ',' consttype ;
+argument: consttype | ID ;
 
-constant_list2: consttype ',' consttype ',' consttype ;
+constant_list: argument ',' argument ;
+
+constant_list2: argument ',' argument ',' argument ;
 
 function_call : ID '(' ')' ';' {
 int k=lookup_func($1);
@@ -485,7 +487,7 @@ printf("M%d:\n",k);
 }
 }
 }
-| ID '(' consttype ')' ';' {int k=lookup_func($1);if(k==-1) 
+| ID '(' argument ')' ';' {int k=lookup_func($1);if(k==-1) 
 printf(" \nUndefined function : Line %d\n",printline());
 else
 {
