@@ -10,7 +10,6 @@ int main()
 			int b;
 			b=9;
 			int x;
-			
 		}
 	}
 	return 0;
