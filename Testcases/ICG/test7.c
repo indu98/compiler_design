@@ -8,15 +8,13 @@ int freq(int w)
 
 int mean(int r,int m)
 {
-	int q;
-	q=r-m;
+	int q=1;
 	return 1;
 }
 
 void pan(int e, int f)
 {
 	int foo=200;
-	int rest=0;
 	int may=0;
 	int dos=250;
 	foo=may+dos;
@@ -26,7 +24,6 @@ void pan(int e, int f)
 int chunk(int a,int b,int c)
 {
  	int ans=a+b+c;
-	ans=ans+1;
 	return 3;
 }
 
