@@ -1,5 +1,13 @@
 #include<stdio.h>
 #include<string.h>
+
+struct function_sym
+{
+   int function;
+   int num_param;
+   char name[100];
+}func[100];
+
 struct sym
 {
 	int sno;
@@ -10,129 +18,38 @@ struct sym
         int nest;
 	int scope;
 }st[100];
-struct function_sym
-{
-   int function;
-   int num_param;
-   char name[100];
-}func[100];
+
 int n=0,arr[10];
 float t[100];
 int iter=0;
+
+void insert_func(char *a, int entry, int num_param)
+{
+	strcpy(func[entry].name, a);
+	func[entry].num_param = num_param;
+}
+
+int lookup_func (char *a)
+{
+	int num;
+	for(num=0; num<function; num++)
+	{
+		if(strcmp(a, func[num].name)==0)
+		{
+			return num;
+		}
+	}
+	return -1;
+}
+
+int number_param (int a)
+{
+	return func[a].num_param;
+}
+
 int returntype_func(int ct)
 {
 	return arr[ct-1];
-}
-void storereturn( int ct, int returntype )
-{
-	arr[ct] = returntype;
-	return;
-}
-void insertscope(char *a,int s)
-{
-	int i;
-	for(i=0;i<n;i++)
-	{
-		if(!strcmp(a,st[i].token))
-		{
-			st[i].scope=s;
-			break;
-		}
-	}
-}
-int returnscope(char *a,int cs)
-{
-	int i;
-	int max = 0;
-	for(i=0;i<=n;i++)
-	{
-		if(!(strcmp(a,st[i].token)) && cs>=st[i].scope)
-		{
-			if(st[i].scope>=max)
-				max = st[i].scope;
-		}
-	}
-	return max;
-}
-int lookup(char *a)
-{
-	int i;
-	for(i=0;i<n;i++)
-	{
-		if( !strcmp( a, st[i].token) )
-			return 0;
-	}
-	return 1;
-}
-int returntype(char *a,int sct)
-{
-	int i;
-	for(i=0;i<=n;i++)
-	{
-		if(!strcmp(a,st[i].token) && st[i].scope==sct)
-		{
-			return st[i].type[0];
-		}
-	}
-}
-void insert_func(char *a, int entry, int num_param)
-{
-strcpy(func[entry].name,a);
-func[entry].num_param=num_param;
-}
-int lookup_func (char *a)
-{
-int num;
-for(num=0;num<function;num++)
-{
-if(strcmp(a,func[num].name)==0)
-{
-return num;
-}
-}
-return -1;
-}
-int number_param (int a)
-{
-return func[a].num_param;
-}
-void check_scope_update(char *a,char *b,int sc)
-{
-	int i,j,k;
-	int max=0;
-	for(i=0;i<=n;i++)
-	{
-		if(!strcmp(a,st[i].token)   && sc>=st[i].scope)
-		{
-			if(st[i].scope>=max)
-				max=st[i].scope;
-		}
-	}
-	for(i=0;i<=n;i++)
-	{
-		if(!strcmp(a,st[i].token)   && max==st[i].scope)
-		{
-			float temp=atof(b);
-			for(k=0;k<st[i].tn;k++)
-			{
-				if(st[i].type[k]==258)
-					st[i].fvalue=(int)temp;
-				else
-					st[i].fvalue=temp;
-			}
-		}
-	}
-}
-void storevalue(char *a,char *b,int s_c)
-{
-	int i;
-	for(i=0;i<=n;i++)
-	{
-		if(!strcmp(a,st[i].token) && s_c==st[i].scope)
-		{
-			st[i].fvalue=atof(b);
-		}
-	}
 }
 
 void insert(char *name, int type, int count)
@@ -162,6 +79,7 @@ void insert(char *name, int type, int count)
 	
 	return;
 }
+
 void insert_dup(char *name, int type,int s_c,int count)
 {
 	strcpy(st[n].token,name);
@@ -173,6 +91,104 @@ void insert_dup(char *name, int type,int s_c,int count)
 	n++;
 	return;
 }
+
+void storereturn( int ct, int returntype )
+{
+	arr[ct] = returntype;
+	return;
+}
+
+void insertscope(char *a,int s)
+{
+	int i;
+	for(i=0;i<n;i++)
+	{
+		if(!strcmp(a,st[i].token))
+		{
+			st[i].scope=s;
+			break;
+		}
+	}
+}
+
+int returnscope(char *a,int cs)
+{
+	int i;
+	int max = 0;
+	for(i=0;i<=n;i++)
+	{
+		if(!(strcmp(a,st[i].token)) && cs>=st[i].scope)
+		{
+			if(st[i].scope>=max)
+				max = st[i].scope;
+		}
+	}
+	return max;
+}
+
+int lookup(char *a)
+{
+	int i;
+	for(i=0;i<n;i++)
+	{
+		if( !strcmp( a, st[i].token) )
+			return 0;
+	}
+	return 1;
+}
+
+int returntype(char *a,int sct)
+{
+	int i;
+	for(i=0;i<=n;i++)
+	{
+		if(!strcmp(a,st[i].token) && st[i].scope==sct)
+		{
+			return st[i].type[0];
+		}
+	}
+}
+
+void check_scope_update(char *a,char *b,int sc)
+{
+	int i,j,k;
+	int max=0;
+	for(i=0;i<=n;i++)
+	{
+		if(!strcmp(a,st[i].token)   && sc>=st[i].scope)
+		{
+			if(st[i].scope>=max)
+				max=st[i].scope;
+		}
+	}
+	for(i=0;i<=n;i++)
+	{
+		if(!strcmp(a,st[i].token)   && max==st[i].scope)
+		{
+			float temp=atof(b);
+			for(k=0;k<st[i].tn;k++)
+			{
+				if(st[i].type[k]==258)
+					st[i].fvalue=(int)temp;
+				else
+					st[i].fvalue=temp;
+			}
+		}
+	}
+}
+
+void storevalue(char *a,char *b,int s_c)
+{
+	int i;
+	for(i=0;i<=n;i++)
+	{
+		if(!strcmp(a,st[i].token) && s_c==st[i].scope)
+		{
+			st[i].fvalue=atof(b);
+		}
+	}
+}
+
 
 void print()
 {
